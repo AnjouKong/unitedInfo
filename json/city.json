@@ -1,0 +1,34 @@
+{
+    "citylist":[
+        {
+            "code":"ABA",
+            "nameEN":"ABAZHOU",
+            "nameAB":"ABZ",
+            "nameCN":"阿坝州"
+        },
+        {
+            "code":"ACH",
+            "nameEN":"ACHENG",
+            "nameAB":"AC",
+            "nameCN":"阿城"
+        },
+        {
+            "code":"AKU",
+            "nameEN":"AKESU",
+            "nameAB":"AKS",
+            "nameCN":"阿克苏"
+        },
+        {
+            "code":"ALS",
+            "nameEN":"ALASHANMENG",
+            "nameAB":"ALSM",
+            "nameCN":"阿拉善盟"
+        },
+        {
+            "code":"AAT",
+            "nameEN":"ALETAI",
+            "nameAB":"ALT",
+            "nameCN":"阿勒泰"
+        }
+    ]
+}

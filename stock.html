@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,user-scalable=yes,minimum-scale=1,maximum-scale=1">
+    <title>股票</title>
+    <link rel="stylesheet" type="text/css" href="common/css/base.css" media="all">
+    <link rel="stylesheet" type="text/css" href="common/css/load.css" media="all">
+    <script type="text/javascript" src="common/js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="common/js/Cursor.js"></script>
+    <script type="text/javascript" src="common/js/jquery.common.js"></script>
+    <!-- <script type="text/javascript" src="common/js/echarts.js"></script> -->
+    <script type="text/javascript" src="common/js/dataJson.js"></script>
+    <style type="text/css">
+        *{ box-sizing: border-box;}
+        html,body{width: 100%; height: 100%; overflow: hidden; font-size: 24px;}
+        .stockPage{ width: 1920px; height: 1080px; background: #c0d0e0; overflow: hidden; background-image: url("common/images/bg.jpg"); background-size: 100% 100%; color: #3C4754;}
+        .leftPart{ float: left; width: 743px; height: 100%; background: rgba(0,0,0,0.2); padding: 90px 86px; }
+        .leftPart .stockCode{ width: 100%; height: 90px; line-height: 90px; border-radius: 5px; background: rgba(0,0,0,0.3); color: #999; text-align: center; font-size: 30px; overflow: hidden; }
+        .leftPart .stockCode span{ color: #F1F1F1 ; }
+        .leftPart .stockCode img{ width: 37px;height: 35px; vertical-align: middle;margin-right: 19px; }
+        .keypad{ width: 100%; height: calc(100% - 289px); overflow: hidden; margin: 58px 0; font-size: 50px; color: #F1F1F1; }
+        .keypad td { width: 33.3%; height: 20%; text-align: center;}
+        .keypad td.s-cursoring div{ width: 100px; height: 100px; line-height: 100px; margin: auto; background: #2389B3; border-radius: 5px; box-shadow: 0 18px 18px rgba(60,71,84,0.48);}
+        .operate{ width: 100%; height: 83px;}
+        .operate div{ width: 270px; height: 75px;line-height: 75px; float: left; background:rgba(0,0,0,0.3); border-radius: 5px; text-align: center; color: #F1F1F1; font-size: 39px; margin-top: 4px; }
+        .operate div:nth-child(2){ float: right;}
+        .operate .s-cursoring{ height: 83px;line-height: 83px; margin-top: 0; background: #2389B3; box-shadow: 0 18px 18px rgba(60,71,84,0.48); }
+        .rightPart{ float: left; width: calc(100% - 743px); height: 100%; padding: 118px 21px 113px 89px; }
+        .rightPart h3{ width: 100%; height:53px; font-size:56px; margin-bottom: 20px; line-height: 1; }
+        .information{ width: 100%; font-size: 32px; margin-bottom: 100px; overflow: hidden; }
+        .information li{ width: 100%; height: 215px; padding: 90px 0; border-bottom: 2px solid rgba(60,71,84,0.2); line-height: 1; margin-left: -50px;}
+        .information li span{ width: 16.6%;text-align: center; display: inline-block;  }
+        .information li:first-child{ height: 220px; font-size: 36px;}
+        .information li:last-child{ height: 213px; border: 0;}
+        .information li span.green{ color: #008444; }
+        .information li span.red{ color: #BF0031; }
+        .time{ width: 100%; height: 28px; text-align: center; position: relative; font-size: 28px; line-height: 1;}
+        .time .line{ width: 350px; position: absolute; top: 50%; margin-top: -1px; border-top: 2px solid rgba(60,71,84,0.2); }
+        .time .line:first-child{ left: 0; }
+        .time .line:last-child{ right: 0; }
+        .time .text{ width: 340px; display: inline-block; }
+        .popUp{ width: 1920px; height: 1080px; background-image: url("common/images/bg.jpg"); background-size: 100% 100%; position: absolute; top: 0; left: 0; color: #3C4754; display: none; }
+        .popUp .sk-circle{ margin: 400px auto; width: 160px; height: 160px; }
+        /*.popUp button{ display: block; margin-bottom: 20px; }*/
+        .popUpLeft{ float: left; width: 517px; height: 100%; background: rgba(255,255,255,0.2); padding: 195px 0 0 101px; }
+        .popUpLeft h3{ width: 100%; height:52px; font-size:56px; line-height: 1; margin-bottom: 70px; }
+        .popUpLeft ul{ width: 100%; font-size: 30px; }
+        .popUpLeft ul li{ width: 100%; height: 65px; line-height: 65px; }
+        .popUpLeft ul li span{ margin-right: 15px; }
+        .popUpRight{ float: left; width: calc(100% - 517px); height: 100%; padding: 177px 100px 183px; overflow: hidden; }
+        .popUpRight li{ float: left; width: calc(50% - 20px); height: calc(50% - 20px); text-align: center; padding: 20px; border-radius: 5px; background: #fff; margin-bottom: 40px; }
+        .popUpRight li:nth-child(2n-1){ margin-right: 40px; }
+        .popUpRight img{ height: 100%; width: 100%; }
+        .error{ width: 1920px; height: 1080px; background-image: url("common/images/bg.jpg"); background-size: 100% 100%; position: absolute; top: 0; left: 0; color: #3C4754; display: none; text-align: center; padding: 347px 0 0; }
+        .error p{ margin-top: 29px; font-size: 42px; }
+        .information .sk-circle{ margin-top: -25px; }
+        /*.table{ margin-top: 10px;}
+        .table tr th,.table tr td{ width:120px; border:1px solid #999; text-align:center; }*/
+        /*ul{ margin-top: 10px; width: 980px; border-collapse: collapse;}
+        ul span{ display: table-cell; width:120px; border:1px solid #999; border-bottom: 0; text-align:center; }
+        ul li:last-child span{ border-bottom:1px solid #999;}*/
+        /*#lineStock,#barStock{ display:none; }*/
+
+    </style>
+</head>
+<body>
+<div id="pageWrap" class="stockPage section">
+    <div class="leftPart jp-table" data-nth="0" data-focus=",,,">
+        <div class="stockCode" id="stockCode" />
+            <img src="common/images/search.png" />请输入股票<span>代码</span>
+        </div>
+        <table class="keypad">
+            <tr class="jp-tr">
+                <td class="jp-td key"><div>600</div></td>
+                <td class="jp-td key"><div>601</div></td>
+                <td class="jp-td key"><div>300</div></td>
+            </tr>
+            <tr class="jp-tr">
+                <td class="jp-td key"><div>002</div></td>
+                <td class="jp-td key"><div>000</div></td>
+                <td class="jp-td key"><div>1</div></td>
+            </tr>
+            <tr class="jp-tr">
+                <td class="jp-td key"><div>2</div></td>
+                <td class="jp-td key"><div>3</div></td>
+                <td class="jp-td key"><div>4</div></td>
+            </tr>
+            <tr class="jp-tr">
+                <td class="jp-td key"><div>5</div></td>
+                <td class="jp-td key"><div>6</div></td>
+                <td class="jp-td key"><div>7</div></td>
+            </tr>
+            <tr class="jp-tr">
+                <td class="jp-td key"><div>8</div></td>
+                <td class="jp-td key"><div>9</div></td>
+                <td class="jp-td key"><div>0</div></td>
+            </tr>
+        </table>
+        <div class="operate jp-tr">
+            <div id="delete" class="jp-td" />删除</div>
+            <div id="search" class="jp-td"  colspan="2" />搜索</div>
+        </div>
+    </div>
+    <div class="rightPart">
+        <h3>今日大盘指数</h3>
+        <ul class="information">
+            <li><span>名称</span><span>最新价</span><span>涨跌</span><span>涨跌幅</span><span>成交量</span><span>成交额</span></li>
+            <!-- <li><span>上证</span><span class="green">最新价</span><span class="green">涨跌</span><span class="green">涨跌幅</span><span>成交量</span><span>成交额</span></li>
+            <li><span>深证</span><span class="red">最新价</span><span class="red">涨跌</span><span class="red">涨跌幅</span><span>成交量</span><span>成交额</span></li> -->
+        </ul>
+        <div class="time">
+            <span class="line"></span>
+            <span class="text"></span>
+            <span class="line"></span>
+        </div>
+    </div>
+</div>
+<div class="popUp section">
+    <div class="popUpLeft">
+        <h3></h3>
+        <ul></ul>
+    </div>
+    <ul class="popUpRight"></ul>
+</div>
+<div class="error section">
+    <img src="common/images/error.png" width="169px" />
+    <p></p>
+</div>
+<div class="sk-circle">
+    <div class="sk-circle1 sk-child"></div>
+    <div class="sk-circle2 sk-child"></div>
+    <div class="sk-circle3 sk-child"></div>
+    <div class="sk-circle4 sk-child"></div>
+    <div class="sk-circle5 sk-child"></div>
+    <div class="sk-circle6 sk-child"></div>
+    <div class="sk-circle7 sk-child"></div>
+    <div class="sk-circle8 sk-child"></div>
+    <div class="sk-circle9 sk-child"></div>
+    <div class="sk-circle10 sk-child"></div>
+    <div class="sk-circle11 sk-child"></div>
+    <div class="sk-circle12 sk-child"></div>
+</div>
+<script>
+    // 键盘操作
+    var dom1,code;
+    var api_version = 'v1';
+
+    var pageType = getQueryString('pageType');
+    var api_base = '';
+    if (pageType == 'web') {
+        api_base = 'http://192.168.16.115:2100/service-converges';
+    } else {
+        var apiHost = window.rnUtils.getHostUrl();
+        api_base = apiHost + '/service-converges';
+    }
+    $(function(){
+        //1920*1080,1366*768,1280*720,960*540,640*360
+        //2560*1440,3840*2160,
+        var ww = $(window).width();
+        var wh = $(window).height()
+        var rate = ww/1920;
+        var height = ww>1920 ? wh : 1080;
+        if (ww/wh == 1.6) {
+            // 适配1280*800
+            height = 1200;
+        }
+        $('.section').css({
+            "transform":"scale("+rate+")",
+            "transform-origin": "0 0",
+            "height": height + "px",
+        });
+
+        //上证指数
+        $.ajax({
+            type: 'get',
+            url: api_base +'/api/converge/stock/'+ api_version +'/hs',
+            headers: {"token": getQueryString('token')},
+            timeout: 10000,
+            data: {"type":"0","gid":""},
+            beforeSend: function () {
+                $(".information").append("<li class='shang'></li>");
+                $(".information .shang").append($("body > .sk-circle").clone());
+            },
+            success: function(data) {
+                // console.log(data.error_code)
+                $(".information .shang").find(".sk-circle").remove();
+                if(data.error_code == "0"){
+                    $(".time .text").text(data.result.time);
+                    $(".information .shang").append("<span>"+(data.result.name).split("指数")[0]+"</span><span>"+data.result.nowpri+"</span><span>"+data.result.increPer+"</span><span>"+data.result.increase+"%</span><span>"+Math.round(((data.result.dealNum)/100000000)*100)/100+"亿</span><span>"+Math.round(((data.result.dealPri)/100000000)*100)/100+"亿</span>");
+                    if($(".shang").find("span:nth-child(3)").text() > 0){
+                        $(".shang").find("span:nth-child(2),span:nth-child(3),span:nth-child(4)").addClass("red");
+                    }else{
+                        $(".shang").find("span:nth-child(2),span:nth-child(3),span:nth-child(4)").addClass("green");
+                    }
+                }else if(data.error_code == "202102"){
+                    $(".information .shang").text("抱歉，查询不到结果！");
+                    $(".information .shang").css("padding-left","50px");
+                    return;
+                }else{
+                    $(".information .shang").text("抱歉，出现网络错误！");
+                    $(".information .shang").css("padding-left","50px");
+                    return;
+                }
+            },
+            // complete: function () {
+            //     // $(".information .shang").remove();
+            //     $(".information").find(".sk-circle").remove();
+            // },
+            error: function(err) {
+                $(".information .shang").find(".sk-circle").remove();
+                $(".information .shang").text("上证指数查询出现网络错误！");
+                $(".information .shang").css("padding-left","50px");
+            }
+        });
+        //深证成指
+        $.ajax({
+            type: 'get',
+            url: api_base +'/api/converge/stock/'+ api_version +'/hs',
+            headers: {"token": getQueryString('token')},
+            timeout: 10000,
+            data: {"type":"1","gid":""},
+            beforeSend: function () {
+                $(".information").append("<li class='shen'></li>");
+                $(".information .shen").append($("body > .sk-circle").clone());
+            },
+            success: function(data) {
+                $(".information .shen").find(".sk-circle").remove();
+                if(data.error_code == "0"){
+                    $(".time .text").text(data.result.time);
+                    $(".information .shen").append("<span>"+(data.result.name).split("成指")[0]+"</span><span>"+data.result.nowpri+"</span><span>"+data.result.increPer+"</span><span>"+data.result.increase+"%</span><span>"+Math.round(((data.result.dealNum)/100000000)*100)/100+"亿</span><span>"+Math.round(((data.result.dealPri)/100000000)*100)/100+"亿</span>");
+                    if($(".shen").find("span:nth-child(3)").text() > 0){
+                        $(".shen").find("span:nth-child(2),span:nth-child(3),span:nth-child(4)").addClass("red");
+                    }else{
+                        $(".shen").find("span:nth-child(2),span:nth-child(3),span:nth-child(4)").addClass("green");
+                    }
+                }else if(data.error_code == "202102"){
+                    $(".information .shen").text("抱歉，查询不到结果！");
+                    $(".information .shen").css("padding-left","50px");
+                    return;
+                }else{
+                    $(".information .shen").text("抱歉，出现网络错误！");
+                    $(".information .shen").css("padding-left","50px");
+                    return;
+                }
+            },
+            // complete: function () {
+            //     $(".information .sell").remove();
+            // },
+            error: function(err) {
+                $(".information .shen").find(".sk-circle").remove();
+                $(".information .shen").text("深证成指查询出现网络错误！");
+                $(".information .shen").css("padding-left","50px");
+            }
+        });
+
+        var cursor = Cursor({
+            wrap: 'body',
+            table: 'jp-table',
+            tr: 'jp-tr',
+            td: 'jp-td',
+            init: [0,0,0],
+            keydownFn: function(dom){
+                dom1 = dom;
+            }
+        });
+    });
+
+    $(document).keydown(function(e){
+        code = e.keyCode;
+        // if((code == 8 || code == 4) && ($(".popUp").css("display") == "block" || $(".error").css("display") == "block")) {
+        //     $(".error").hide();
+        //     $(".popUp").hide();
+        //     $(".popUpLeft h3").text('');
+        //     $(".popUpLeft ul li").remove();
+        //     $(".popUpRight li").remove();
+        // }
+
+        // 遥控器的返回键无法监听到，可以监听popstate状态
+        window.addEventListener("popstate", function(e) {
+            if($(".popUp").css("display") == "block" || $(".error").css("display") == "block") {
+                $(".error").hide();
+                $(".popUp").hide();
+                $(".popUpLeft h3").text('');
+                $(".popUpLeft ul li").remove();
+                $(".popUpRight li").remove();
+            }
+        }, false);
+
+        if($(".popUp").css("display") == "block") return;
+
+        if(code == 13 && dom1.hasClass('key')){
+            $('#stockCode').text($('#stockCode').text().split("请输入股票代码")[0] + dom1.find("div").html());
+        }
+        if(code == 13 && dom1.attr("id") == 'search') {
+            history.pushState(null, null, '#');
+            var str = $('#stockCode').text().replace(/(^\s*)|(\s*$)/g, ""); // 000004
+            // var regularSH = /^((600|601|603|900|730|700|580)[\d]{3})$/;
+            // var regularSZ = /^((000|200|080|031)[\d]{3})$/;
+            var regularSH = /^((6|9|7|5)[\d]{5})$/;
+            var regularSZ = /^((0|1|2|3)[\d]{5})$/;
+            if(regularSH.test(str)){
+                str = "sh"+str;
+            }else if(regularSZ.test(str)){
+                str = "sz"+str;
+            };
+            //股票查询
+            $.ajax({
+                type: 'get',
+                url: api_base +'/api/converge/stock/'+ api_version +'/hs',
+                headers: {"token": getQueryString('token')},
+                timeout: 10000,
+                data: {"type":"","gid":str},
+                beforeSend: function () {
+                    $(".popUp").show();
+                    $(".popUp").append($(".sk-circle").clone());
+                },
+                success: function(data) {
+                    if(data.error_code == "0"){
+                        var stockList = data.result[0];
+                        $(".popUpLeft h3").text(stockList.data.name);
+                        $(".popUpLeft ul li").remove();
+                        $(".popUpRight li").remove();
+                        $(".popUpLeft ul").append("<li><span>今日开盘:</span>"+stockList.data.todayStartPri+"</li>"+
+                                                   "<li><span>昨日收益:</span>"+stockList.data.yestodEndPri+"</li>"+
+                                                   "<li><span>当前价格:</span>"+stockList.data.nowPri+"</li>"+
+                                                   "<li><span>今日最高:</span>"+stockList.data.todayMax+"</li>"+
+                                                   "<li><span>今日最低:</span>"+stockList.data.todayMin+"</li>"+
+                                                   "<li><span>竞买价:</span>"+stockList.data.competitivePri+"</li>"+
+                                                   "<li><span>成交量:</span>"+stockList.data.traNumber+"</li>"+
+                                                   "<li><span>成交额:</span>"+stockList.data.traAmount+"</li>");
+                        $(".popUpRight").append("<li><img src='"+stockList.gopicture.dayurl+"'/></li>"+
+                                                "<li><img src='"+stockList.gopicture.minurl+"'/></li>"+
+                                                "<li><img src='"+stockList.gopicture.monthurl+"'/></li>"+
+                                                "<li><img src='"+stockList.gopicture.weekurl+"'/></li>");
+                        $(".popUp").show();
+                    }else if(data.error_code == "202101"){
+                        $(".error").show();
+                        $(".error p").text("抱歉，请检查你的股票代码！");
+                        return;
+                    }else if(data.error_code == "202102"){
+                        $(".error").show();
+                        $(".error p").text("抱歉，查询不到结果！");
+                        return;
+                    }else{
+                        $(".error").show();
+                        $(".error p").text("抱歉，出现网络错误！");
+                        return;
+                    }
+                },
+                complete: function () {
+                    $(".popUp").find(".sk-circle").remove();
+                },
+                error: function(err) {
+                    $(".error").show();
+                    $(".error p").text("抱歉，出现网络错误！");
+                }
+            });
+        }
+        if(code == 13 && dom1.text() == '删除') {
+            if($('#stockCode').text().split("请输入股票代码").length > 1) return;
+            var len = $('#stockCode').text().replace(/(^\s*)|(\s*$)/g, "");
+            // console.log(len.length)
+            if(len.length == 1){
+                $('#stockCode').text("");
+                $('#stockCode').append("<img src='common/images/search.png' />请输入股票<span>代码</span>");
+            }else{
+                // $('#stockCode').text(parseInt($('#stockCode').text()/10));
+                $('#stockCode').text(len.substring(0,len.length-1));
+            }
+        }
+
+    });
+
+
+</script>
+</body>
+</html>

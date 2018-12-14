@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,user-scalable=yes,minimum-scale=1,maximum-scale=1">
+    <title>世界时间</title>
+    <link rel="stylesheet" type="text/css" href="common/css/base.css" media="all">
+    <link rel="stylesheet" type="text/css" href="common/css/load.css" media="all">
+    <link rel="stylesheet" href="common/time/css/jClocksGMT.css">
+    <script type="text/javascript" src="common/js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="common/js/Cursor.js"></script>
+    <script type="text/javascript" src="common/js/jquery.common.js"></script>
+    <script src="common/time/js/timeGMT.js"></script>
+    <script src="common/time/js/jquery.rotate.js"></script>
+    <style type="text/css">
+        *{ box-sizing: border-box;}
+        html,body{width: 100%; height: 100%; overflow: hidden; font-size: 24px; color: #3C4754;}
+        .timePage{ width: 1920px; height: 1080px; padding: 140px 160px 140px 120px; overflow: hidden; background-image: url("common/images/world_bg.jpg"); background-size: 100% 100%;}
+        .timeBox{width: 100%; height: 800px; display: none;}
+        .leftPart{ float: left; width: 420px; height: 100%; background: rgba(250,250,250,0.6); padding: 240px 0; text-align: center; }
+        .leftPart > div{ width: 100%; height: 100%; display: none; }
+        .jcgmt-container .jcgmt-lbl{ width:100%; height:47px; line-height: 47px; font-size: 44px; color: #3C4754; background: none; padding: 0; font-weight: normal }
+        .jcgmt-container .jcgmt-digital{ width: 100%; height: 73px; line-height: 73px; font-size: 70px; color: #3C4754; margin: 63px 0; font-weight: normal; }
+        .jcgmt-container .jcgmt-date{ width: 100%; height:32px; line-height: 32px; font-size:33px; color: #3C4754; font-weight: normal;}
+        .rightPart{ float: left; width: 1220px; height: 100%; overflow: hidden;}
+        .rightPart .rightUp{ width: 100%; height: 679px; background: rgba(250,250,250,0.3); padding: 62px 115px 62px 98px; }
+        .rightPart .rightUp .infoUp{ width: 100%; height: 100%; background: url("common/images/world.png") no-repeat 15px center; background-size: 100% 100%;}
+        .rightPart .rightUp .infoUp div{ width: 4.16%; height: 100%; float: left; }
+
+        .rightPart .s-cursoring{ background-image: url("common/images/choose.png"); background-size: 100% 100%; -webkit-transform:scale(1.1); }
+        .rightPart .rightDown{ width: 100%; height: 121px; line-height: 87px; background: rgba(250,250,250,0.5); font-size: 42px; text-align: center; padding: 17px 30px; }
+        .arrowLeft,.arrowRigth{ float: left; width: 87px; height: 87px; border-radius: 5px; }
+        .arrowRigth{ float: right; }
+        .rightDown img{ /*vertical-align: unset;*/ margin-bottom: 26px; }
+        .sk-circle{ width: 160px; height: 160px; position: absolute; top: 50%; left: 50%; margin: -80px 0 0 -80px; display: none; }
+        .error { width: 800px; position: absolute; top: 50%; left: 50%; margin: -150px 0 0 -400px; text-align: center; display: none; }
+        .error p{ margin-top: 29px; font-size: 30px; }
+    </style>
+</head>
+<body>
+<div class="timePage section">
+    <div class="timeBox">
+        <div class="leftPart">
+            <div id="central"></div>
+            <div id="east1"></div>
+            <div id="east2"></div>
+            <div id="east3"></div>
+            <div id="east5"></div>
+            <!-- <div id="east6"></div> -->
+            <div id="east7"></div>
+            <div id="east8"></div>
+            <div id="east9"></div>
+            <div id="east10"></div>
+            <div id="west10"></div>
+            <div id="west8"></div>
+            <div id="west6"></div>
+            <div id="west5"></div>
+            <div id="west3"></div>
+        </div>
+        <div class="rightPart">
+            <div class="rightUp j-table" data-nth="0" data-focus=",,,">
+                <div class="infoUp j-tr"></div>
+            </div>
+            <div class="rightDown">
+                <div class="arrowLeft"><img src="common/images/left_.png" /></div>
+                <span class="name">中国 北京</span>
+                <div class="arrowRigth"><img src="common/images/right_.png" /></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sk-circle">
+        <div class="sk-circle1 sk-child"></div>
+        <div class="sk-circle2 sk-child"></div>
+        <div class="sk-circle3 sk-child"></div>
+        <div class="sk-circle4 sk-child"></div>
+        <div class="sk-circle5 sk-child"></div>
+        <div class="sk-circle6 sk-child"></div>
+        <div class="sk-circle7 sk-child"></div>
+        <div class="sk-circle8 sk-child"></div>
+        <div class="sk-circle9 sk-child"></div>
+        <div class="sk-circle10 sk-child"></div>
+        <div class="sk-circle11 sk-child"></div>
+        <div class="sk-circle12 sk-child"></div>
+    </div>
+
+    <div class="error">
+        <img src="common/images/error.png" width="169px" />
+        <p>获取世界时间失败</p>
+    </div>
+</div>
+
+<script>
+    var api_version = 'v1';
+
+    var pageType = getQueryString('pageType');
+    var api_base = '';
+    if (pageType == 'web') {
+        api_base = 'http://192.168.16.115:2100/service-converges';
+    } else {
+        var apiHost = window.rnUtils.getHostUrl();
+        api_base = apiHost + '/service-converges';
+    }
+
+    $(function(){
+        var code;
+        //1920*1080,1366*768,1280*720,960*540,640*360
+        //2560*1440,3840*2160,
+        var ww = $(window).width();
+        var wh = $(window).height()
+        var rate = ww/1920;
+        var height = ww>1920 ? wh : 1080;
+        if (ww/wh == 1.6) {
+            // 适配1280*800
+            height = 1200;
+
+            $('.timePage').css({
+                "padding-top": "180px",
+            });
+        }
+        $('.section').css({
+            "transform":"scale("+rate+")",
+            "transform-origin": "0 0",
+            "height": height + "px",
+        });
+        for(var i=0; i<24; i++){
+            $(".infoUp").append("<div></div>");
+        };
+        $(".infoUp div:nth-child(2)").attr({"mark":"central","number":"first"});
+        $(".infoUp div:nth-child(3)").attr("mark","east1");
+        $(".infoUp div:nth-child(4)").attr("mark","east2");
+        $(".infoUp div:nth-child(5)").attr("mark","east3");
+        $(".infoUp div:nth-child(7)").attr("mark","east5");
+        // $(".infoUp div:nth-child(8)").attr("mark","east6");
+        $(".infoUp div:nth-child(9)").attr("mark","east7");
+        $(".infoUp div:nth-child(10)").attr("mark","east8");
+        $(".infoUp div:nth-child(11)").attr("mark","east9");
+        $(".infoUp div:nth-child(12)").attr("mark","east10");
+        $(".infoUp div:nth-child(16)").attr("mark","west10");
+        $(".infoUp div:nth-child(18)").attr("mark","west8");
+        $(".infoUp div:nth-child(20)").attr("mark","west6");
+        $(".infoUp div:nth-child(21)").attr("mark","west5");
+        $(".infoUp div:nth-child(23)").attr({"mark":"west3","number":"last"});
+        $("div[mark]").addClass("j-td");
+
+        $(document).keydown(function(e){
+            code = e.keyCode;
+        });
+
+        $.ajax({
+            type: 'get',
+            url: api_base +'/api/converge/getTime/'+ api_version +'/getTime',
+            headers: {"token": getQueryString('token')},
+            timeout: 10000,
+            beforeSend: function () {
+                $('.sk-circle').show();
+            },
+            success: function(data) {
+                if (data && data.result) {
+                    $('.timeBox').show();
+                    $('.sk-circle').hide();
+
+                    var time = parseInt(data.result);
+
+                    // 设置时区
+                    setTime(time);
+
+                    var cursor = Cursor({
+                        wrap: 'body',
+                        table: 'j-table',
+                        tr: 'j-tr',
+                        td: 'j-td',
+                        init: [0,0,6],
+                        keydownFn: function(dom){
+                            $(".leftPart > div").hide();
+                            $(".leftPart").find("#"+dom.attr("mark")).show();
+                            $(".name").text($("#"+dom.attr("mark")).find(".jcgmt-lbl").text());
+                            // 向左
+                            if(code == 37){
+                                // if(dom.attr("number") == "first"){
+                                //     $(".arrowRigth").css({"background":"#2389b3","box-shadow":"0 10px 15px #999"});
+                                //     $(".arrowRigth img").attr("src","common/images/right.png");
+                                //     $(".arrowLeft").css({"background":"transparent","box-shadow":"unset"});
+                                //     $(".arrowLeft img").attr("src","common/images/left_.png");
+                                // }else{
+                                //     $(".arrowLeft").css({"background":"#2389b3","box-shadow":"0 10px 15px #999"});
+                                //     $(".arrowLeft img").attr("src","common/images/left.png");
+                                //     $(".arrowRigth").css({"background":"transparent","box-shadow":"unset"});
+                                //     $(".arrowRigth img").attr("src","common/images/right_.png");
+                                // }
+                                $(".arrowLeft").css({"background":"#2389b3","box-shadow":"0 10px 15px #999"});
+                                $(".arrowLeft img").attr("src","common/images/left.png");
+                                setTimeout(function(){
+                                    $(".arrowLeft").css({"background":"transparent","box-shadow":"0 0 0"});
+                                    $(".arrowLeft img").attr("src","common/images/left_.png");
+                                },200)
+                            }
+                            // 向右
+                            if(code == 39){
+                                // if(dom.attr("number") == "last"){
+                                //     $(".arrowLeft").css({"background":"#2389b3","box-shadow":"0 10px 15px #999"});
+                                //     $(".arrowLeft img").attr("src","common/images/left.png");
+                                //     $(".arrowRigth").css({"background":"transparent","box-shadow":"unset"});
+                                //     $(".arrowRigth img").attr("src","common/images/right_.png");
+                                // }else{
+                                //     $(".arrowRigth").css({"background":"#2389b3","box-shadow":"0 10px 15px #999"});
+                                //     $(".arrowRigth img").attr("src","common/images/right.png");
+                                //     $(".arrowLeft").css({"background":"transparent","box-shadow":"unset"});
+                                //     $(".arrowLeft img").attr("src","common/images/left_.png");
+                                // }
+                                $(".arrowRigth").css({"background":"#2389b3","box-shadow":"0 10px 15px #999"});
+                                $(".arrowRigth img").attr("src","common/images/right.png");
+                                setTimeout(function(){
+                                    $(".arrowRigth").css({"background":"transparent","box-shadow":"0 0 0"});
+                                    $(".arrowRigth img").attr("src","common/images/right_.png");
+                                },200)
+                            }
+                        }
+                    });
+                } else {
+                    $('.sk-circle').hide();
+                    $('.error').show();
+                }
+            },
+            error: function(err) {
+                $('.sk-circle').hide();
+                $('.error').show();
+            }
+        });
+
+        function setTime(time){
+            // 东"+" 西"-" （西1，0，东1~11，东西12，西12~西2）
+            $('#central').timeGMT({ // 2 中央时区
+                title: '英国 伦敦',
+                offset: '0',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#east1').timeGMT({ // 3 东一区
+                title: '法国 巴黎',
+                offset: '+1',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#east2').timeGMT({ // 4 东二区
+                title: '希腊 雅典',
+                offset: '+2',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#east3').timeGMT({ // 5 东三区
+                title: '俄罗斯 莫斯科',
+                offset: '+3',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#east5').timeGMT({ // 7 东五区
+                title: '巴基斯坦 伊斯兰堡',
+                offset: '+5',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            // $('#east6').timeGMT({ // 8 东六区
+            //     title: '孟加拉国 达卡',
+            //     offset: '+6',
+            //     date: true,
+            //     time: time,
+            //     timeformat: 'HH:mm',
+            //     dateformat: 'YYYY/MM/DD DDD'
+            // });
+
+            $('#east7').timeGMT({ // 9 东七区
+                title: '泰国 曼谷',
+                offset: '+7',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#east8').timeGMT({ // 10 东七区
+                title: '中国 北京',
+                offset: '+8',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#east9').timeGMT({ // 11 东九区
+                title: '日本 东京',
+                offset: '+9',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#east10').timeGMT({ // 12 东十区
+                title: '澳大利亚 墨尔本',
+                offset: '+10',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#west10').timeGMT({ // 16 西十区
+                title: '美国 檀香山',
+                offset: '-10',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#west8').timeGMT({ // 18 西八区
+                title: '加拿大 温哥华',
+                offset: '-8',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#west6').timeGMT({ // 20 西六区
+                title: '墨西哥 墨西哥城',
+                offset: '-6',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#west5').timeGMT({ // 21 西五区
+                title: '美国 纽约',
+                offset: '-5',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+
+            $('#west3').timeGMT({ // 23 西三区
+                title: '巴西 巴西利亚',
+                offset: '-3',
+                date: true,
+                time: time,
+                timeformat: 'HH:mm',
+                dateformat: 'YYYY/MM/DD DDD'
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

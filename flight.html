@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,user-scalable=yes,minimum-scale=1,maximum-scale=1">
+    <title>航班</title>
+    <link rel="stylesheet" type="text/css" href="common/css/base.css" media="all">
+    <script type="text/javascript" src="common/js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="common/js/Cursor.js"></script>
+    <script type="text/javascript" src="common/js/j.suggest.js"></script>
+    <script type="text/javascript" src="common/js/j.dimensions.js"></script>
+    <script type="text/javascript" src="common/js/aircity.js"></script>
+    <style type="text/css">
+        /*.table .tr{overflow:hidden;}
+        .table .item{float:left;width:100px;height:100px;margin:20px 0 0 20px;border:1px solid #999;border-radius:10px;}
+        .table .item-colspan2{width:220px;}
+        .table1{background:#eee}*/
+    </style>
+</head>
+<body>
+<div id="pageWrap" class="flightPage">
+
+    <div>
+        <input type="hidden" name="arrcity_3word" id="arrcity_3word" value="" />
+
+        <label for="arrcity">出发城市：</label><input type="text" name="arrcity" id="arrcity" />
+
+        <div id='suggest' class="ac_results"></div>
+
+        <label for="city2">目的城市：</label><input type="text" name="city2" id="city2" />
+
+        <div id='suggest2' class="ac_results"></div>
+    </div>
+
+    <div class="search j-table" data-nth="0" data-focus=",,,">
+        <div class="j-tr">
+            <div class="search-item j-td">
+                <p class="label">出发地</p>
+                <input type="text" class="txt" id="orgcity">
+                <input type="hidden" name="orgCity">
+                <div class="cityResult"></div>
+            </div>
+            <div class="search-item j-td">
+                <p class="label">目的地</p>
+                <input type="text" class="txt" id="dstcity">
+                <input type="hidden" name="dstCity">
+                <div class="cityResult"></div>
+            </div>
+            <div class="search-item j-td">
+                <p class="label">日期</p>
+                <input type="text" class="txt" id="flightdate">
+                <input type="hidden" name="flightDate">
+            </div>
+            <div class="search-item j-td">
+                <input type="button" class="txt" id="search" value="搜索">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="jianpan">
+    <table id="xfjp" class="jianpan jp-table" data-nth="99" data-focus=",,,">
+        <tr class="jp-tr">
+            <td class="jp-td key">1</td>
+            <td class="jp-td key">2</td>
+            <td class="jp-td key">3</td>
+            <td class="jp-td key">4</td>
+            <td class="jp-td key">5</td>
+            <td class="jp-td key">6</td>
+            <td class="jp-td key">7</td>
+            <td class="jp-td key">8</td>
+            <td class="jp-td key">9</td>
+            <td class="jp-td key">0</td>
+        </tr>
+        <tr class="jp-tr">
+            <td class="jp-td key">q</td>
+            <td class="jp-td key">w</td>
+            <td class="jp-td key">e</td>
+            <td class="jp-td key">r</td>
+            <td class="jp-td key">t</td>
+            <td class="jp-td key">y</td>
+            <td class="jp-td key">u</td>
+            <td class="jp-td key">i</td>
+            <td class="jp-td key">o</td>
+            <td class="jp-td key">p</td>
+        </tr>
+        <tr class="jp-tr">
+            <td class="jp-td key">a</td>
+            <td class="jp-td key">s</td>
+            <td class="jp-td key">d</td>
+            <td class="jp-td key">f</td>
+            <td class="jp-td key">g</td>
+            <td class="jp-td key">h</td>
+            <td class="jp-td key">j</td>
+            <td class="jp-td key">k</td>
+            <td class="jp-td key">l</td>
+            <td class="jp-td key">删除</td>
+        </tr>
+        <tr class="jp-tr">
+            <td class="jp-td shift">shift</td>
+            <td class="jp-td key">z</td>
+            <td class="jp-td key">x</td>
+            <td class="jp-td key">c</td>
+            <td class="jp-td key">v</td>
+            <td class="jp-td key">b</td>
+            <td class="jp-td key">n</td>
+            <td class="jp-td key">m</td>
+            <td class="jp-td key" colspan="2">完成</td>
+        </tr>
+    </table>
+</div>
+
+<script>
+    //城市列表
+    var citylist;
+    $(function(){
+        $.ajax({
+            type: "GET",
+            url: "json/city.json",
+            dataType:'json',
+            success: function(data){
+                citylist = data.citylist;
+            }
+       });
+    });
+
+    // $(function(){
+    //     $("#orgcity").suggest(citys,{hot_list:commoncitys,dataContainer:'#arrcity_3word',onSelect:function(){$("#city2").click();},attachObject:'#suggest'});
+    //     $("#dstcity").suggest(citys,{hot_list:commoncitys,attachObject:"#suggest2"});
+    // });
+
+    // $("#orgcity").change(function(){
+    //     console.log("change")
+    // })
+
+    var inputok = true;
+    var searchok = false;
+    var keyboardok = false;
+    var dom1,dom2;
+    var currentInput = '';
+    var city_result_index = -1;
+
+    // $('.search').data('focus', ',,99-0-0,')
+
+    var cursor = Cursor({
+        wrap: 'body',
+        table: 'j-table',
+        tr: 'j-tr',
+        td: 'j-td',
+        init: [0,0,0],
+        keydownFn: function(dom){
+            // $(document).keydown(function(e){
+            //     var code = e.keyCode;
+            //     console.log(code);
+            // });
+            // console.log(dom.find('#orgcity').val());
+            dom1 = dom;
+            // inputok = false;
+            // searchok = false;
+            // // currentInput = '';
+            // var inputKeyId = dom.find('input.txt').attr("id");
+            // if(inputKeyId){
+            //     switch(inputKeyId){
+            //         case 'orgcity':
+            //             inputok = true;
+            //             searchok = false;
+            //             currentInput = 'orgcity';
+            //             break;
+            //         case 'dstcity':
+            //             inputok = true;
+            //             searchok = false;
+            //             currentInput = 'dstcity';
+            //             break;
+            //         case 'flightdate':
+            //             inputok = true;
+            //             searchok = false;
+            //             currentInput = 'flightdate';
+            //             break;
+            //         case 'search':
+            //             inputok = false;
+            //             searchok = true;
+            //             currentInput = 'search';
+            //             break;
+            //         default:
+            //             inputok = false;
+            //             searchok = false;
+            //             currentInput = '';
+            //             break;
+            //     }
+            // }
+            // if(dom.hasClass('key')){
+            //     console.log('ok')
+            // }
+        }
+    });
+
+    var cursor2 = Cursor({
+        wrap: 'body',
+        table: 'jp-table',
+        tr: 'jp-tr',
+        td: 'jp-td',
+        init: [99,0,0],
+        keydownFn: function(dom){
+            dom2 = dom;
+        }
+    });
+
+    $(document).keydown(function(e){
+        // console.log(dom1.html());
+        var code = e.keyCode;
+        var keyboard = dom2.html();
+        if(!keyboardok) {
+            currentInput = dom1.find('input.txt').attr("id")
+        }
+        if(code == 13 && keyboardok && dom2.hasClass('key') && keyboard != '完成'){
+            if(currentInput && currentInput != 'search'){
+                $('#'+currentInput).val($('#'+currentInput).val() + keyboard);
+                if(currentInput == 'orgcity' || currentInput == 'dstcity'){
+                    cityreg($('#'+currentInput).val());
+                }
+            }
+        }
+
+        if(code == 13) {
+            keyboardok = true;
+            $('#jianpan').show();
+        }
+        if(code == 13 && keyboard == '完成'){
+            keyboardok = false;
+            $('#jianpan').hide();
+        }
+
+        if(!keyboardok){
+            var keycode = e.keyCode;
+            var $as = $('#'+currentInput).siblings('.cityResult').find('ul').children('li').children('a');
+            console.log($as)
+            if (keycode === 38) {
+                if (city_result_index === -1) {
+                    city_result_index = $as.length - 1;
+                    $($as[city_result_index]).addClass('hover').parent().siblings().children('a').removeClass('hover');
+                } else if (city_result_index === -1 || city_result_index === 0) {
+                    city_result_index = $as.length - 1;
+                    $($as[city_result_index]).addClass('hover').parent().siblings().children('a').removeClass('hover');
+                } else {
+                    city_result_index--;
+                    $($as[city_result_index]).addClass('hover').parent().siblings().children('a').removeClass('hover');
+                }
+            } else if (keycode === 40) {
+                if (city_result_index === ($as.length - 1)) {
+                    city_result_index = 0;
+                    $($as[city_result_index]).addClass('hover').parent().siblings().children('a').removeClass('hover');
+                } else {
+                    city_result_index++;
+                    $($as[city_result_index]).addClass('hover').parent().siblings().children('a').removeClass('hover');
+                }
+            } else if (keycode === 13) {
+                console.log($($as[city_result_index]).text());
+                $('#'+currentInput).val($($as[city_result_index]).text());
+                // $('#'+currentInput).siblings('.cityResult').hide();
+            }
+        }
+    });
+
+    function cityreg(items) {
+        var html = '';
+
+        for (var i = 0; i < citys.length; i++) {//国内城市匹配
+            var reg = new RegExp('^' + items + '.*$', 'im');
+            if (reg.test(citys[i][0]) || reg.test(citys[i][1]) || reg.test(citys[i][2]) || reg.test(citys[i][3])) {
+                html += '<li rel="' + citys[i][0] + '"><a href="#' + i + '"><span>' + citys[i][2] + '</span>' + citys[i][1] + '</a></li>';
+            }
+        }
+        if (html == '') {
+            suggest_tip = '<div class="gray ac_result_tip">对不起，找不到：' + items + '</div>';
+        }
+        else {
+            suggest_tip = '<div class="gray ac_result_tip">' + items + '，按拼音排序</div>';
+        }
+        html = suggest_tip + '<ul>' + html + '</ul>';
+        $('#'+currentInput).siblings('.cityResult').html(html).show();
+    }
+</script>
+</body>
+</html>

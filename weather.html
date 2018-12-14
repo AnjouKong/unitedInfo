@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,user-scalable=yes,minimum-scale=1,maximum-scale=1">
+    <title>天气</title>
+    <link rel="stylesheet" type="text/css" href="common/css/base.css" media="all">
+    <script type="text/javascript" src="common/js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="common/js/Cursor.js"></script>
+    <script type="text/javascript" src="common/js/jquery.common.js"></script>
+    <style>
+        *{ box-sizing: border-box;}
+        html,body{width: 100%; height: 100%; overflow: hidden; }
+        .weatherPage{ width: 1920px; height: 1080px; background-image: url("common/images/weather_bg.jpg"); overflow: hidden; background-size: 100% 100%; padding: 120px; color: #3C4754;}
+        .weatherBox{ width: 100%; height: 840px; overflow: hidden; }
+        .cityList{ width: 420px; height: 100%; background: rgba(250,250,250,0.55); float: left;text-align: center; position: relative; }
+        .cityList ul{ width: 100%; padding: 20px; position: absolute;}
+        .cityList ul li{ width: 100%; height: 100px; line-height: 100px; text-align: center; font-size: 36px; }
+        .cityList ul li .s-cursoring { background: #2389B3; border-radius: 5px; box-shadow: 0 18px 18px rgba(60,71,84,0.48); display: block; color: #F1F1F1; font-size: 47px; }
+        .weatherInfo{ width: calc(100% - 420px); height: 100%; float: right; background: rgba(250,250,250,0.45);}
+        .weatherInfo .item{ float: left; width: 33.3%; text-align: center; padding: 142px 0;}
+        .weatherInfo .item .title{ height:41px; line-height: 40px; font-size:44px; margin-bottom: 78px; }
+        .weatherInfo .item .icon img{ width: 220px; height: 220px; margin-bottom: 58px; }
+        .weatherInfo .item .temperature{ height:41px; line-height: 40px; font-size:30px; margin-bottom: 25px; }
+        .weatherInfo .item .desc{ height:41px; line-height: 40px; font-size: 42px; }
+    </style>
+</head>
+<body>
+
+<div class="weatherPage section">
+    <div class="weatherBox clearfix">
+        <div class="cityList">
+            <ul class="j-table" data-nth="0" data-focus=",,,">
+            </ul>
+        </div>
+        <div class="weatherInfo">
+            <!-- <div class="item">
+                <div class="title">今天</div>
+                <div class="icon"><img src="common/images/weather/0.png" alt=""></div>
+                <div class="temperature">2~9℃</div>
+                <div class="desc">晴</div>
+            </div>
+            <div class="item">
+                <div class="title">明天</div>
+                <div class="icon"><img src="common/images/weather/5.png" alt=""></div>
+                <div class="temperature">2~9℃</div>
+                <div class="desc">晴</div>
+            </div>
+            <div class="item">
+                <div class="title">后天</div>
+                <div class="icon"><img src="common/images/weather/9.png" alt=""></div>
+                <div class="temperature">2~9℃</div>
+                <div class="desc">晴</div>
+            </div> -->
+        </div>
+    </div>
+</div>
+
+<script>
+    var api_version = 'v1';
+
+    var pageType = getQueryString('pageType');
+    var api_base = '';
+    if (pageType == 'web') {
+        api_base = 'http://192.168.16.115:2100/service-converges';
+    } else {
+        var apiHost = window.rnUtils.getHostUrl();
+        api_base = apiHost + '/service-converges';
+    }
+
+    var code,mark;
+
+    var cityList = ['北京','上海','广州','深圳','重庆','成都','大连','福州','贵阳','哈尔滨','海口','杭州','合肥','呼和浩特','济南','昆明','拉萨','兰州','南昌','南京','南宁','青岛','三亚','厦门','沈阳','石家庄','台北','太原','天津','乌鲁木齐','武汉','西安','西宁','银川','长春','长沙','郑州'];
+    var day = ['今天','明天','后天'];
+    $(function(){
+        //1920*1080,1366*768,1280*720,960*540,640*360
+        //2560*1440,3840*2160,
+        var ww = $(window).width();
+        var wh = $(window).height()
+        var rate = ww/1920;
+        var height = ww>1920 ? wh : 1080;
+        if (ww/wh == 1.6) {
+            // 适配1280*800
+            height = 1200;
+
+            $('.weatherPage').css({
+                "padding-top": "160px",
+            });
+        }
+        $('.section').css({
+            "transform":"scale("+rate+")",
+            "transform-origin": "0 0",
+            "height": height + "px",
+        });
+
+        var cityListDom = '';
+        for(var i=0; i<cityList.length; i++){
+            cityListDom += '<li class="j-tr"><span class="j-td">'+ cityList[i] +'</span></li>'
+        }
+        $('.cityList ul').append(cityListDom);
+
+        $(document).keydown(function(e){
+            code = e.keyCode;
+        });
+        var top_num = 0;
+        var location;
+        var cursor = Cursor({
+            wrap: 'body',
+            table: 'j-table',
+            tr: 'j-tr',
+            td: 'j-td',
+            init: [0,0,0],
+            keydownFn: function(dom){
+                if (location == dom.html()) return;
+
+                location = dom.html();
+                // 生成随机数
+                var num = "";
+                for(var i=0;i<6;i++){
+                    num += Math.floor(Math.random()*10);
+                }
+                mark = num;
+                getWeather(location,num);
+                var indexLi = dom.parent().index();
+                var $cityList = $(".cityList ul");
+                var top = $cityList.css('margin-top');
+                var list_num = $(".cityList ul li").length;
+
+                // 向下
+                if(code == 40){
+                    // console.log($cityList.css("margin-top"))
+                    if(indexLi > 7 && top_num < list_num-8){
+                        top_num = top_num + 1;
+                        $cityList.css("top","-"+(top_num)*100+"px");
+                    }
+                }
+                // 向上
+                if(code == 38){
+                    if (indexLi < top_num && top_num > 0) {
+                        top_num = top_num -1;
+                        $cityList.css("top","-"+(top_num)*100+"px");
+                    }
+                }
+            }
+        });
+    });
+    function getWeather (location,num) {
+        $.ajax({
+            type: 'get',
+            url: api_base +'/api/converge/weather/'+ api_version +'/query',
+            headers: {"token": getQueryString('token')},
+            timeout: 10000,
+            data: {"location":location},
+            beforeSend: function () {
+                // $('.weatherInfo').empty();
+            },
+            success: function(data) {
+                if (data && data.results && data.results[0].daily) {
+                    // console.log("mark:"+mark)
+                    if( num != mark) return;
+                    $('.weatherInfo').empty();
+                    var res = data.results[0].daily;
+                    var weatherDom = '';
+                    for(var i=0; i<res.length; i++){
+                        weatherDom += '<div class="item" mark="'+num+'">'+
+                            '<div class="title">'+ day[i] +'</div>'+
+                            '<div class="icon"><img src="common/images/weather/'+ res[i].code_day +'.png" alt=""></div>'+
+                            '<div class="temperature">'+ res[i].low +' ~ '+ res[i].high +'℃</div>'+
+                            '<div class="desc">'+ res[i].text_day +'</div>'+
+                        '</div>';
+                    }
+                    $('.weatherInfo').append(weatherDom);
+                    // $('.weatherInfo').find(".item").hide();
+                    // $('.weatherInfo').find("div[mark='"+mark+"']").show();
+
+                }
+            },
+            error: function(err) {
+                $('.weatherInfo').empty();
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

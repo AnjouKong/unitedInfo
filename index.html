@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,user-scalable=yes,minimum-scale=1,maximum-scale=1,target-densitydpi=device-dpi">
+    <title>焦点处理</title>
+    <link rel="stylesheet" type="text/css" href="common/css/base.css" media="all">
+    <script type="text/javascript" src="common/js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="common/js/Cursor.js"></script>
+    <style type="text/css">
+        .table .tr{overflow:hidden;}
+        .table .item{float:left;width:100px;height:100px;margin:20px 0 0 20px;border:1px solid #999;border-radius:10px; text-align: center; line-height: 100px;}
+        .table .item-colspan2{width:220px;}
+        .table1{background:#eee}
+
+        .g-focus{position:absolute;-webkit-transition-duration: 300ms;z-index:1001; border-radius: 10px; border:2px solid #f00;}
+    </style>
+</head>
+<body>
+
+<div class="j-table table1 table section" data-nth="0" data-focus=",,1-0-0,">
+    <div class="j-tr tr">
+        <div class="j-td item" data-url="stock.html?token=123&pageType=web">股票</div>
+        <div class="j-td item" data-url="exchangeRate.html?token=123&pageType=web">汇率</div>
+        <div class="j-td item" data-url="weather.html?token=123&pageType=web">天气</div>
+        <div class="j-td item" data-url="worldTime.html?token=123&pageType=web">时间</div>
+        <div class="j-td item" data-url="http://192.168.16.115:2100/web-webpagetv/topics.html?token=0000c9851ea2e0cd37749a75613d372f158d1b15&pageType=web&subjectId=XBkOh7kVNRZNE2ssn8D">专题</div>
+        <div class="j-td item" data-url="http://192.168.16.115:2100/web-webpagetv/contact.html">品牌</div>
+        <div class="j-td item" data-url="http://192.168.16.115:2100/web-webpagetv/vip.html">VIP</div>
+    </div>
+</div>
+<div class="">分辨率</div>
+<div class="windowW"></div>
+<div class="windowH"></div>
+
+<script>
+    var dom1;
+    var cursor = Cursor({
+        wrap: 'body',
+        table: 'j-table',
+        tr: 'j-tr',
+        td: 'j-td',
+        init: [0,0,0],
+        keydownFn: function(dom){
+            dom1 = dom;
+        }
+    });
+    $(document).keydown(function(e){
+        // console.log(dom1.html());
+        var code = e.keyCode;
+
+        if(code == 13){
+            location.href = dom1.data('url');
+        }
+    });
+    var windowH = $(document).height();
+    var windowW = $(window).width()
+    $('.windowH').html(windowH)
+    $('.windowW').html(windowW)
+
+    //1920*1080,1366*768,1280*720,960*540,640*360
+    //2560*1440,3840*2160
+    var ww = $(window).width();
+    var wh = $(window).height()
+    var rate = ww/1920;
+    var height = ww>1920 ? wh : 1080;
+    $('.section .g-focus').css({
+        "transform":"scale("+rate+")",
+        "transform-origin": "0 0",
+        "height": height + "px",
+    });
+</script>
+</body>
+</html>

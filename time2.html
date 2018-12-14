@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,user-scalable=yes,minimum-scale=1,maximum-scale=1">
+    <title>世界时间</title>
+</head>
+<body>
+
+    <div id="clock_hou"></div>
+    <div id="clock_india"></div>
+    <div id="clock_korea"></div>
+    <div id="clock_uk"></div>
+    <div id="clock_tokyo"></div>
+    <div id="clock_mosike"></div>
+
+    <script src="http://apps.bdimg.com/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    <script src="common/time/js/timeGMT.js"></script>
+
+    <script>
+        $(document).ready(function(){
+
+            $('#clock_hou').timeGMT(
+            {
+                title: '华盛顿 美国',
+                offset: '-6',
+                date: true,
+                dateformat: 'MM/DD/YYYY DDD MMM',
+                imgpath: 'common/time/'
+            });
+
+            $('#clock_india').timeGMT(
+            {
+                title: '新德里 印度',
+                offset: '+5.5',
+                dst: false,
+                skin: 2,
+                timeformat: 'HH:mm:ss',
+                imgpath: 'common/time/'
+            });
+
+            $('#clock_korea').timeGMT(
+            {
+                title: '首尔 韩国',
+                offset: '+8',
+                skin: 3,
+                date: true,
+                imgpath: 'common/time/'
+            });
+
+            $('#clock_uk').timeGMT(
+            {
+                date: true,
+                dateformat: 'YYYY/MM/DD',
+                skin: 4,
+                imgpath: 'common/time/'
+            });
+
+            $('#clock_tokyo').timeGMT(
+            {
+                title: '东京 日本',
+                offset: '+9',
+                skin: 5,
+                imgpath: 'common/time/'
+            });
+
+            $('#clock_mosike').timeGMT(
+            {
+                title: '莫斯科 俄罗斯',
+                offset: '+3',
+                skin: 1,
+                imgpath: 'common/time/'
+            });
+
+        });
+    </script>
+
+</body>
+</html>
